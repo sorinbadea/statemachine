@@ -1,10 +1,12 @@
 CC=g++ -std=c++11
 CFLAGS=-c
-LDFLAGS= -pthread -lstdc++
+LDFLAGS= -pthread -lstdc++ 
 
-SOURCES=state_machine.cpp
+SOURCES= main.cpp engine/engine.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
+
+INCPATH=-Iengine -Imachine
 
 EXE_=themachine
 
@@ -14,7 +16,7 @@ $(EXE_): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -g -o $@
 
 .cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(INCPATH) $(CFLAGS) $< -o $@
 
 clean:
 	rm -f $(EXE_) $(OBJECTS)

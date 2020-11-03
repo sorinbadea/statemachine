@@ -32,6 +32,4 @@
 *.exe
 *.out
 *.app
-app_server
-app_client
-app_test
+themachine
