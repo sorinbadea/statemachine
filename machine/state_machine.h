@@ -22,7 +22,8 @@ class state_machine {
    T* p_obj_instance;
 
    /* private
-    * typedef of pointer to method of p_object_instance */
+    * typedef of pointer to methods belonging 
+    * to the test class */
    typedef int (T::*p_methods_t)(void);
 
    /* private 
@@ -33,6 +34,11 @@ class state_machine {
      * private 
      * vector iterator through pointers to methods */
     typename std::list<p_methods_t>::iterator p_it;
+
+    /**
+     * private
+     * async result of method call via a thread */
+    std::future<int> p_result;
 
 public:
 
@@ -54,7 +60,7 @@ public:
        p_methods.push_back(step_method);
        if (p_methods.size() == 1) {
           /*
-           * initialize the vector iterator 
+           * initialize the list iterator 
  	   * */
           p_it = p_methods.begin();
       }
@@ -63,26 +69,35 @@ public:
    /* call each recorded steps */
    int step()
    {
-
+       int result = 0;
        if (p_it != p_methods.end())
        {
-           std::future<int> result = std::async(
-              std::launch::async, 
-              *p_it,
+           p_result = std::async(
+               std::launch::async, 
+               *p_it,
                p_obj_instance);
 
-           result.wait();
-           std::cout << result.get() << std::endl;
+           /**
+	    * p_result.get() will block
+	    * until the end of the above thread
+	    **/
+           std::cout << p_result.get() << std::endl;
            p_it++;
-	   return 1;
+	   result = 1;
        }
-       /* mark the end of iterations */
-       return 0;
+       else
+       {
+          /* mark the end of iterations */
+          result = 0;
+       }
+       return result;
    }
 
-   /* callback for the end of each step */
+   /* callback for the end of each step; 
+    * will be called by the test class */
    void operator()()
    {
+      std::cout << "calling Elvis.." << std::endl;
    }
 
 };

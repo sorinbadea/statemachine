@@ -1,6 +1,6 @@
 #include <iostream>
 #include "state_machine.h"
-#include "engine.h"
+#include "test_class.h"
 
 int main(void) {
 
@@ -9,6 +9,7 @@ int main(void) {
     state_machine<test_class> engine(&foo);
     engine.set_step(&test_class::test1);
     engine.set_step(&test_class::test2);
+    engine.set_step(&test_class::test3);
     
     auto stop = 1;
     while(stop)

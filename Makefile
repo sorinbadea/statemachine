@@ -2,11 +2,11 @@ CC=g++ -std=c++11
 CFLAGS=-c
 LDFLAGS= -pthread -lstdc++ 
 
-SOURCES= main.cpp engine/engine.cpp
+SOURCES= main.cpp target/test_class.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
-INCPATH=-Iengine -Imachine
+INCPATH=-Itarget -Imachine
 
 EXE_=themachine
 
