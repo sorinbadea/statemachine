@@ -5,26 +5,44 @@
 #include <future>
 #include <thread>
 
-template <bool>
-struct compile_error;
+/**
+ *ensure that the callback indicating the end
+  of the thread is called after the thread ends 
+ */
+template <typename T>
+class thread_guard
+{
+   /* private
+    * object instance for method calls */
+    T* p_obj_instance;
 
-template <>
-struct compile_error<true> {
+public:
+    thread_guard() = delete;
+    explicit thread_guard(T* instance) : p_obj_instance(instance) 
+    {}
+    ~thread_guard()
+    {
+       /** state_machine callback */
+       (*p_obj_instance)();
+    }
 };
 
-#define check_type(expr)(expr?true:false)
-
+/**
+ * takes a test class instance and it's method pointers
+ * and call them one after another;
+ * TODO add full async behaviour
+ */
 template <typename T>
 class state_machine {
-    
+
+   /* typedef of pointer to methods belonging 
+    * to the test class */
+   typedef int (T::*p_methods_t)(void);
+
    /* private
     * object instance for method calls */
    T* p_obj_instance;
 
-   /* private
-    * typedef of pointer to methods belonging 
-    * to the test class */
-   typedef int (T::*p_methods_t)(void);
 
    /* private 
     * vector of pointers to methods */
@@ -40,6 +58,9 @@ class state_machine {
      * async result of method call via a thread */
     std::future<int> p_result;
 
+    /** indicates the end of the thread */
+    bool p_task_done;
+
 public:
 
    state_machine() = delete;
@@ -50,6 +71,7 @@ public:
    {
        assert(instance != NULL);
        p_obj_instance = instance;
+       p_task_done = false;
    }
 
    /* update the step method, initialize the iterator 
@@ -74,16 +96,23 @@ public:
        {
            p_result = std::async(
                std::launch::async, 
-               *p_it,
-               p_obj_instance);
+               [this] {
+               thread_guard<state_machine> th(this);
+               return (p_obj_instance->**p_it)();
+               /**
+                * the callback shall be callled only 
+		* at the end of the scope of \"th\"
+		* after the end of test call
+                **/
+               });
 
-           /**
-	    * p_result.get() will block
-	    * until the end of the above thread
-	    **/
+           /** this call still blocks */
            std::cout << p_result.get() << std::endl;
+
            p_it++;
-	   result = 1;
+
+	   /** still iterations to do */
+           result = 1;
        }
        else
        {
@@ -93,10 +122,11 @@ public:
        return result;
    }
 
-   /* callback for the end of each step; 
-    * will be called by the test class */
+   /* callback for the end of each test; 
+    * it is called by the guard_thread */
    void operator()()
    {
+      p_task_done = true;
       std::cout << "calling Elvis.." << std::endl;
    }
 

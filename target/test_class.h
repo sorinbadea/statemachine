@@ -4,14 +4,11 @@
 #include <iostream>
 #include "state_machine.h"
 
+/**
+ * ordinary test class in test
+ */
 class test_class
 {
-/**
- * private
- * state machine reference
- */
-    state_machine<test_class>* p_state_machine;
-
 public:
     /* public:
      * workers methods
@@ -20,7 +17,6 @@ public:
     int test2(void);
     int test3(void);
 
-    void set_callback(state_machine<test_class>* instance);
 };
 
 #endif
