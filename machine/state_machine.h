@@ -4,6 +4,11 @@
 #include <list>
 #include <future>
 #include <thread>
+#include <mutex>
+
+enum class TestSuiteDone {
+   YES = 0, NO=1
+};
 
 /**
  *ensure that the callback indicating the end
@@ -16,21 +21,26 @@ class thread_guard
     * object instance for method calls */
     T* p_obj_instance;
 
+    /** test result */
+    int p_res;
+
 public:
     thread_guard() = delete;
-    explicit thread_guard(T* instance) : p_obj_instance(instance) 
+    explicit thread_guard(T* instance, int res) : 
+       p_obj_instance(instance), p_res(res)
     {}
     ~thread_guard()
     {
        /** state_machine callback */
-       (*p_obj_instance)();
+       (*p_obj_instance)(p_res);
     }
 };
 
 /**
  * takes a test class instance and it's method pointers
  * and call them one after another;
- * TODO add full async behaviour
+ * Implements a full async behaviour, each tests are 
+ * ran one aftre another and does not block the caller;
  */
 template <typename T>
 class state_machine {
@@ -56,10 +66,15 @@ class state_machine {
     /**
      * private
      * async result of method call via a thread */
-    std::future<int> p_result;
+    std::future<void> p_result;
 
-    /** indicates the end of the thread */
-    bool p_task_done;
+    /** private
+     * indicates the end of the thread */
+    std::atomic<bool> p_task_done;
+
+    /** private
+     * sync the thread runningh the test with the parent thread */
+    std::mutex p_sync_threads;
 
 public:
 
@@ -71,7 +86,7 @@ public:
    {
        assert(instance != NULL);
        p_obj_instance = instance;
-       p_task_done = false;
+       p_task_done = true;
    }
 
    /* update the step method, initialize the iterator 
@@ -83,51 +98,63 @@ public:
        if (p_methods.size() == 1) {
           /*
            * initialize the list iterator 
- 	   * */
+           **/
           p_it = p_methods.begin();
       }
    }
 
    /* call each recorded steps */
-   int step()
+   TestSuiteDone step()
    {
-       int result = 0;
+
+       std::unique_lock<std::mutex> lock(p_sync_threads);
+       TestSuiteDone result = TestSuiteDone::NO;
+
        if (p_it != p_methods.end())
        {
-           p_result = std::async(
-               std::launch::async, 
-               [this] {
-               thread_guard<state_machine> th(this);
-               return (p_obj_instance->**p_it)();
-               /**
-                * the callback shall be callled only 
-		* at the end of the scope of \"th\"
-		* after the end of test call
-                **/
-               });
+           if (p_task_done)
+	   {
+               p_task_done = false;
 
-           /** this call still blocks */
-           std::cout << p_result.get() << std::endl;
+	       /**
+		* launch the thread running the test
+		**/
+               p_result = std::async(
+                    std::launch::async, 
+                        [this] {
+			/**
+			 * test call 
+			 **/
+                        int res = (p_obj_instance->**p_it)();
 
-           p_it++;
+			/** 
+			 * the destructor of thread_guard will
+			 * trigger the callback ensuring the end of 
+			 * the thread
+			 */
+                        thread_guard<state_machine> th(this, res);
+                    }
+	       );
+	   }
 
-	   /** still iterations to do */
-           result = 1;
+	   /** iterations still remains */
+           result = TestSuiteDone::NO;
        }
        else
        {
-          /* mark the end of iterations */
-          result = 0;
+           result = p_task_done?TestSuiteDone::YES:TestSuiteDone::NO;
        }
        return result;
    }
 
    /* callback for the end of each test; 
-    * it is called by the guard_thread */
-   void operator()()
+    * it is called by the guard_thread by it's destructor*/
+   void operator()(int test_result)
    {
-      p_task_done = true;
-      std::cout << "calling Elvis.." << std::endl;
+       std::unique_lock<std::mutex> lock(p_sync_threads);
+       ++p_it;
+       p_task_done = true;
+       std::cout << "test result " << test_result << std::endl;
    }
 
 };
