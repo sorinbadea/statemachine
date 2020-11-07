@@ -1,6 +1,8 @@
 #include <iostream>
 #include "state_machine.h"
 #include "test_class.h"
+#include "results.h"
+#include "results.cpp"
 
 int main(void) {
 
@@ -19,10 +21,23 @@ int main(void) {
     TestSuiteDone stop = TestSuiteDone::NO;
     while(stop == TestSuiteDone::NO)
     {
-        //do something else
-	//std::cout << "processing.." << std::endl;
+        /** 
+	 * non blocking call regardless 
+	 * of test behaviour */
         stop = engine.step();
-        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));	
+    }
+
+    /**
+     * results display
+     */
+    {
+        Results<int> r;
+        std::list<int> results = engine.get_results();
+        std::list<int>::iterator it = results.begin();
+    
+        r.compare(1, *it++);
+        r.compare(1, *it++);
+        r.compare(1, *it);
     }
     
     return 0;

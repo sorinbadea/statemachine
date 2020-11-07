@@ -26,9 +26,15 @@ class thread_guard
 
 public:
     thread_guard() = delete;
+
+    /**
+     * thrad guard cobnstructor
+     * \@param instance state_machine instance
+     * \@param res test result */
     explicit thread_guard(T* instance, int res) : 
        p_obj_instance(instance), p_res(res)
     {}
+
     ~thread_guard()
     {
        /** state_machine callback */
@@ -40,7 +46,7 @@ public:
  * takes a test class instance and it's method pointers
  * and call them one after another;
  * Implements a full async behaviour, each tests are 
- * ran one aftre another and does not block the caller;
+ * ran one after another and does not block the caller;
  */
 template <typename T>
 class state_machine {
@@ -76,12 +82,15 @@ class state_machine {
      * sync the thread runningh the test with the parent thread */
     std::mutex p_sync_threads;
 
+    std::list<int> p_result_list;
+
 public:
 
    state_machine() = delete;
 
    /* initialize the class instance which will 
-    * be used by the state machine */
+    * be used by the state machine 
+    * \@param instance target class instance */
    explicit state_machine(T* instance)
    {
        assert(instance != NULL);
@@ -90,7 +99,8 @@ public:
    }
 
    /* update the step method, initialize the iterator 
-    * through the list of methods pointers */
+    * through the list of methods pointers 
+    * \@param step_method  test method in target class */
    void set_step(p_methods_t step_method) 
    {
        assert(step_method != NULL);
@@ -148,16 +158,22 @@ public:
    }
 
    /* callback for the end of each test; 
-    * it is called by the guard_thread by it's destructor*/
+    * it is called by the guard_thread by it's destructor
+    * \@param result  test result */
    void operator()(int test_result)
    {
        std::unique_lock<std::mutex> lock(p_sync_threads);
        ++p_it;
        p_task_done = true;
-       std::cout << "test result " << test_result << std::endl;
+       p_result_list.push_back(test_result);
+   }
+
+   /**
+    * Getter, return the results */
+   std::list<int> get_results(void) const {
+       return p_result_list;
    }
 
 };
 
 #endif
-
