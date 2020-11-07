@@ -16,6 +16,8 @@ public:
 
     /**
      * compare expected results with received results
+     * The same code shall work for differentd types
+     * i.e.  double, float, std::string
      */
     void compare(T expected, T result);
 
