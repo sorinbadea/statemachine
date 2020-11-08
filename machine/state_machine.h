@@ -14,24 +14,24 @@ enum class TestSuiteDone {
  *ensure that the callback indicating the end
   of the thread is called after the thread ends 
  */
-template <typename T>
+template <typename T, typename TResult>
 class thread_guard
 {
    /* private
-    * object instance for method calls */
+    * state machine instance */
     T* p_obj_instance;
 
-    /** test result */
-    int p_res;
+    /** test result type */
+    TResult p_res;
 
 public:
     thread_guard() = delete;
 
     /**
-     * thrad guard cobnstructor
+     * thread guard constructor
      * \@param instance state_machine instance
      * \@param res test result */
-    explicit thread_guard(T* instance, int res) : 
+    explicit thread_guard(T* instance, TResult res) : 
        p_obj_instance(instance), p_res(res)
     {}
 
@@ -47,13 +47,15 @@ public:
  * and call them one after another;
  * Implements a full async behaviour, each tests are 
  * ran one after another and does not block the caller;
+ * T -> test class instance
+ * TResult -> test result type
  */
-template <typename T>
+template <typename T, typename TResult>
 class state_machine {
 
    /* typedef of pointer to methods belonging 
     * to the test class */
-   typedef int (T::*p_methods_t)(void);
+   typedef TResult (T::*p_methods_t)(void);
 
    /* private
     * object instance for method calls */
@@ -82,7 +84,10 @@ class state_machine {
      * sync the thread runningh the test with the parent thread */
     std::mutex p_sync_threads;
 
-    std::list<int> p_result_list;
+    /**
+     * private
+     * results list */
+    std::list<TResult> p_result_list;
 
 public:
 
@@ -135,14 +140,14 @@ public:
 			/**
 			 * test call 
 			 **/
-                        int res = (p_obj_instance->**p_it)();
+                        TResult res = (p_obj_instance->**p_it)();
 
 			/** 
 			 * the destructor of thread_guard will
 			 * trigger the callback ensuring the end of 
 			 * the thread
 			 */
-                        thread_guard<state_machine> th(this, res);
+                        thread_guard<state_machine, TResult> th(this, res);
                     }
 	       );
 	   }
@@ -160,7 +165,7 @@ public:
    /* callback for the end of each test; 
     * it is called by the guard_thread by it's destructor
     * \@param result  test result */
-   void operator()(int test_result)
+   void operator()(TResult test_result)
    {
        std::unique_lock<std::mutex> lock(p_sync_threads);
        ++p_it;
@@ -170,7 +175,7 @@ public:
 
    /**
     * Getter, return the results */
-   std::list<int> get_results(void) const {
+   std::list<TResult> get_results(void) const {
        return p_result_list;
    }
 

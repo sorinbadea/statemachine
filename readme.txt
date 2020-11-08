@@ -13,6 +13,6 @@ In the same time preserves the order of the calls.
 for the moment the supported method signature is
 int some_method(void);
 
-For usage see ithe file main.cpp, in this case
-the test1, test2, test3 methods are called in this order:
-even if one of the above methods blocks the machine does not.
+For usage see the file main.cpp, in this case
+the test1, test2, test3 methods are called in this order.
+Even if one of the above methods blocks the machine does not.
