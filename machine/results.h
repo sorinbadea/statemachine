@@ -1,6 +1,14 @@
 #ifndef RESULTS_H
 #define RESULTS_H
 
+
+/**
+ * - class designed compare an expecetd results with 
+ * a received results;
+ * - count if the check id OK or NOK
+ * - for more complex types the \"compare\" method
+ *   shall be redefined
+ *   */
 template <typename T>
 class Results 
 {
@@ -9,15 +17,13 @@ class Results
     int p_tests;
 
 public:
-    /**
-     * private data initialization
-     */
+    /** private data initialization */
     Results(); 
 
     /**
-     * compare expected results with received results
-     * The same code shall work for differentd types
-     * i.e.  double, float, std::string
+     * compare expected result with received result;
+     * The same code works for different types
+     * i.e. double, float, std::string
      */
     void compare(T expected, T result);
 

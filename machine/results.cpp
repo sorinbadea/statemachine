@@ -6,7 +6,7 @@ Results<T>::Results() : p_ok(0), p_nok(0), p_tests(0)
 {}
 
 template <typename T>
-void Results<T>::compare(T expected, T result) 
+void Results<T>::compare(T expected, T result)
 {
    (expected == result)?++p_ok:++p_nok;
    ++p_tests;
@@ -21,5 +21,42 @@ Results<T>::~Results()
     std::cout << "tests  " << p_tests << std::endl;
     std::cout << "passed " << p_ok << std::endl;
     std::cout << "failed " << p_nok << std::endl;
+    std::cout << std::endl;
+}
+
+/**
+ * run each functor stored in the state machine;
+ * compare the expected results wit the returned results;
+ * \@param engine   test engine (state_machine)
+ * \@param expected expected results
+ */
+template< typename T, typename TResult >
+void run_tests(state_machine<T, TResult>& engine, std::list<TResult> expected)
+{
+   TestSuiteDone stop = TestSuiteDone::NO;
+   while(stop == TestSuiteDone::NO)
+   {
+       /**
+        * non blocking call regardless
+        * of test behaviour */
+       stop = engine.step();
+    }
+
+    /* get the returned results */
+    std::list< TResult > results = engine.get_results();
+    assert( expected.size() == results.size() );
+
+    /** expected and results list iterators */
+    typename std::list< TResult >::iterator it_r = results.begin();
+    typename std::list< TResult >::iterator it_e = expected.begin();
+
+    /**
+     * compare the expected and the received results
+     * show statistics */
+    Results<TResult> stat;
+    for(; it_r != results.end(); it_r++, it_e++ )
+    {
+        stat.compare(*it_e, *it_r);
+    }
 }
 
