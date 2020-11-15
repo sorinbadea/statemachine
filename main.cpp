@@ -30,7 +30,15 @@ int main(void) {
 	 std::list<int> expected = {1, 1, 1};
 
 	 /* ran and test the results */
-	 run_steps<test_class1, int>(engine, expected, main_loop);
+         if (run_steps<test_class1, int>(engine, expected, main_loop))
+         {
+             std::cout << "steps suite passed" << std::endl;
+         }
+         else
+         {
+             std::cout << "steps suite failed" << std::endl;
+         }
+         std::cout << std::endl;
     }
 
     {
@@ -49,7 +57,15 @@ int main(void) {
 	 std::list<std::string> expected = {"s1", "s2", "s33"};
 
 	 /* ran and test the results */
-	 run_steps<test_class2, std::string>(engine, expected, main_loop);
+	 if (run_steps<test_class2, std::string>(engine, expected, main_loop))
+         {
+             std::cout << "steps suite passed" << std::endl;
+         }
+         else
+         {
+             std::cout << "steps suite failed" << std::endl;
+         }
+         std::cout << std::endl;
     }
 
     return 0;

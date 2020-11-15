@@ -16,12 +16,21 @@ template <typename T>
 Results<T>::~Results()
 {
     std::cout << std::endl;
-    std::cout << "test suite results" << std::endl;
+    std::cout << "steps suite results" << std::endl;
     std::cout << "==================" << std::endl;
-    std::cout << "tests  " << p_tests << std::endl;
+    std::cout << "steps  " << p_tests << std::endl;
     std::cout << "passed " << p_ok << std::endl;
     std::cout << "failed " << p_nok << std::endl;
-    std::cout << std::endl;
+}
+
+template <typename T>
+bool Results<T>::verdict(void)
+{
+    if (p_tests == p_ok)
+    {
+       return true;
+    }
+    return false;
 }
 
 /**
@@ -29,17 +38,18 @@ Results<T>::~Results()
  * compare the expected results wit the returned results;
  * \@param engine   test engine (state_machine)
  * \@param expected expected results
- * \@pparam callback calls an exterior main loop
+ * \@param callback calls an exterior main loop
  *          allowing other jobs to run
+ * \@retval true if all steps passed, false otherwise
  */
 template< typename T, typename TResult >
-void run_steps(
+bool run_steps(
     state_machine<T, TResult>& engine, 
     std::list<TResult> expected,
     void (*callback)(void))
 {
-   TestSuiteDone stop = TestSuiteDone::NO;
-   while(stop == TestSuiteDone::NO)
+   StepsSuiteReady stop = StepsSuiteReady::NO;
+   while(stop == StepsSuiteReady::NO)
    {
        /**
         * non blocking call regardless
@@ -66,5 +76,6 @@ void run_steps(
     {
         stat.compare(*it_e, *it_r);
     }
+    return stat.verdict();
 }
 

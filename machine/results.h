@@ -16,6 +16,9 @@ class Results
     int p_nok;
     int p_tests;
 
+    Results(const Results&);
+    Results operator=(const Results&);
+
 public:
     /** private data initialization */
     Results(); 
@@ -26,6 +29,11 @@ public:
      * i.e. double, float, std::string
      */
     void compare(T expected, T result);
+
+    /**
+     * return true if all steps passed,
+     * othrewise returns false */
+    bool verdict(void);
 
     /**
      * destructor

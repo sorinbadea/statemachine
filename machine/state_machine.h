@@ -6,7 +6,7 @@
 #include <thread>
 #include <mutex>
 
-enum class TestSuiteDone {
+enum class StepsSuiteReady {
    YES = 0, NO=1
 };
 
@@ -23,6 +23,9 @@ class thread_guard
 
     /** test result type */
     TResult p_res;
+
+    thread_guard<T, TResult>(const thread_guard&);
+    thread_guard<T, TResult> operator=(const thread_guard&);
 
 public:
     thread_guard() = delete;
@@ -119,11 +122,11 @@ public:
    }
 
    /* call each recorded steps */
-   TestSuiteDone step()
+   StepsSuiteReady step()
    {
 
        std::unique_lock<std::mutex> lock(p_sync_threads);
-       TestSuiteDone result = TestSuiteDone::NO;
+       StepsSuiteReady result = StepsSuiteReady::NO;
 
        if (p_it != p_methods.end())
        {
@@ -153,11 +156,11 @@ public:
 	   }
 
 	   /** iterations still remains */
-           result = TestSuiteDone::NO;
+           result = StepsSuiteReady::NO;
        }
        else
        {
-           result = p_task_done?TestSuiteDone::YES:TestSuiteDone::NO;
+           result = p_task_done?StepsSuiteReady::YES:StepsSuiteReady::NO;
        }
        return result;
    }
