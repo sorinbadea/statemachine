@@ -29,9 +29,14 @@ Results<T>::~Results()
  * compare the expected results wit the returned results;
  * \@param engine   test engine (state_machine)
  * \@param expected expected results
+ * \@pparam callback calls an exterior main loop
+ *          allowing other jobs to run
  */
 template< typename T, typename TResult >
-void run_tests(state_machine<T, TResult>& engine, std::list<TResult> expected)
+void run_steps(
+    state_machine<T, TResult>& engine, 
+    std::list<TResult> expected,
+    void (*callback)(void))
 {
    TestSuiteDone stop = TestSuiteDone::NO;
    while(stop == TestSuiteDone::NO)
@@ -40,6 +45,9 @@ void run_tests(state_machine<T, TResult>& engine, std::list<TResult> expected)
         * non blocking call regardless
         * of test behaviour */
        stop = engine.step();
+
+       /* give control to other jobs */
+       callback();
     }
 
     /* get the returned results */

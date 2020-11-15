@@ -3,8 +3,6 @@
 This is a prototype for a non blocking functor 
 called in a strict sequence.
 
-The statemachine name is wrongly chosen :(
-
 The core of the prototype is the state_machine.h
 
 It takes a class instance and pointers to it's methods

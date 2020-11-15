@@ -4,7 +4,16 @@
 #include "results.h"
 #include "results.cpp"
 
+void main_loop(void)
+{
+   /**
+    * Other jobs could be started here
+    */
+   //std::cout << "other jobs.." << std::endl;
+}
+
 int main(void) {
+
     {
         /** test class1 instanciation */
         test_class1 foo;
@@ -21,7 +30,7 @@ int main(void) {
 	 std::list<int> expected = {1, 1, 1};
 
 	 /* ran and test the results */
-	 run_tests<test_class1, int>(engine, expected);
+	 run_steps<test_class1, int>(engine, expected, main_loop);
     }
 
     {
@@ -40,7 +49,9 @@ int main(void) {
 	 std::list<std::string> expected = {"s1", "s2", "s33"};
 
 	 /* ran and test the results */
-	 run_tests<test_class2, std::string>(engine, expected);
+	 run_steps<test_class2, std::string>(engine, expected, main_loop);
     }
+
     return 0;
 }
+
