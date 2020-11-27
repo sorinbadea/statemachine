@@ -6,7 +6,7 @@ Results<T>::Results() : p_ok(0), p_nok(0), p_tests(0)
 {}
 
 template <typename T>
-void Results<T>::compare(T expected, T result)
+void Results<T>::compare(const T& expected, const T& result)
 {
    (expected == result)?++p_ok:++p_nok;
    ++p_tests;

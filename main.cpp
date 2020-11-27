@@ -51,10 +51,9 @@ int main(void) {
          /** add methods to be tested */
          engine.set_step(&test_class2::test1);
          engine.set_step(&test_class2::test2);
-         engine.set_step(&test_class2::test3);
 
 	 /* expected results */
-	 std::list<std::string> expected = {"s1", "s2", "s33"};
+	 std::list<std::string> expected = {"s1", "s2"};
 
 	 /* ran and test the results */
 	 if (run_steps<test_class2, std::string>(engine, expected, main_loop))

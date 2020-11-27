@@ -28,7 +28,7 @@ public:
      * The same code works for different types
      * i.e. double, float, std::string
      */
-    void compare(T expected, T result);
+    void compare(const T& expected, const T& result);
 
     /**
      * return true if all steps passed,

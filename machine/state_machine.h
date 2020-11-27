@@ -147,8 +147,7 @@ public:
 
 			/** 
 			 * the destructor of thread_guard will
-			 * trigger the callback ensuring the end of 
-			 * the thread
+			 * trigger the callback when the therad ends
 			 */
                         thread_guard<state_machine, TResult> th(this, res);
                     }
